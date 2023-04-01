@@ -1,0 +1,9 @@
+### Intellij ###
+.idea/
+*.iml
+*.ipr
+.attach*
+
+node_modules
+*.db
+.env
