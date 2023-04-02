@@ -8,5 +8,9 @@
     "lodash": "^4.17.21",
     "request": "^2.88.2",
     "sqlite3": "^5.1.6"
+  },
+
+  "scripts": {
+    "start": "node index.js"
   }
 }
