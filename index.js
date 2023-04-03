@@ -39,7 +39,7 @@ async function processTask(db, fcmToken, keyword) {
     if (fcmMessages.length > 0) {
       await sendMessage(fcmToken, keyword, fcmMessages);
     } else {
-      log("_____ No message sent _____");
+      log("_ No message sent");
     }
 
   } catch (error) {
