@@ -8,7 +8,7 @@ async function requestURI(searchKeyword) {
         reject(error);
       }
       resolve({
-        statusCode: response.statusCode,
+        statusCode: response?.statusCode ?? 500,
         body,
       });
     });

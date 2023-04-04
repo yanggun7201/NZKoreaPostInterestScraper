@@ -1,9 +1,13 @@
 function log(...values) {
-  console.log(new Date().toISOString(), ...values);
+  console.log(getDateTime(), ...values);
 }
 
 function errorLog(...values) {
-  console.error(new Date().toISOString(), ...values);
+  console.error(getDateTime(), ...values);
+}
+
+function getDateTime() {
+  return new Date().toLocaleString('ko-KR', { timeZone: 'Pacific/Auckland' });
 }
 
 module.exports = {
