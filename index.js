@@ -1,7 +1,7 @@
-const { extractBody } = require("./utils/html_utils");
+const { extractProductBody, extractExchange } = require("./utils/html_utils");
+const { requestProduct, requestHomePage } = require("./utils/http_utils");
 const { sendMessage } = require("./utils/message_utils");
 const { log, errorLog } = require("./utils/log_utils");
-const { requestURI } = require("./utils/http_utils");
 const DBUtils = require("./utils/DBUtils");
 const { isEmpty, trim } = require("lodash");
 const { loadEnv } = require("./utils/env_utils");
@@ -10,7 +10,7 @@ loadEnv();
 async function processTask(db, fcmToken, keyword) {
 
   try {
-    const response = await requestURI(keyword);
+    const response = await requestProduct(keyword);
 
     if (response.statusCode !== 200) {
       return;
@@ -18,7 +18,7 @@ async function processTask(db, fcmToken, keyword) {
 
     const fcmMessages = [];
 
-    await extractBody(response.body, async function (values) {
+    await extractProductBody(response.body, async function (values) {
       const { postId, title, date, link } = values;
 
       try {
@@ -38,6 +38,40 @@ async function processTask(db, fcmToken, keyword) {
 
     if (fcmMessages.length > 0) {
       await sendMessage(fcmToken, keyword, fcmMessages);
+    } else {
+      log("_ No message sent");
+    }
+
+  } catch (error) {
+    errorLog("error", error);
+  }
+}
+
+async function processExchangeAlarm(fcmToken, nzExchangeThreshold) {
+
+  try {
+    const response = await requestHomePage();
+
+    if (response.statusCode !== 200) {
+      return;
+    }
+
+    const fcmMessages = [];
+
+    await extractExchange(response.body, async function (values) {
+      const { nzExchange, date } = values;
+
+      try {
+        if (nzExchange <= nzExchangeThreshold) {
+          fcmMessages.push({ postId: "", title: `환율 ${nzExchange}`, link: "", date });
+        }
+      } catch (error) {
+        errorLog(error.message);
+      }
+    });
+
+    if (fcmMessages.length > 0) {
+      await sendMessage(fcmToken, `NZ 환율 <= ${nzExchangeThreshold}`, fcmMessages);
     } else {
       log("_ No message sent");
     }
@@ -69,6 +103,12 @@ async function main() {
         }
         await processTask(db, fcmToken, keyword);
       }
+
+      const nzExchange = device.nzExchange;
+      if (!nzExchange) {
+        continue;
+      }
+      await processExchangeAlarm(fcmToken, nzExchange);
     }
 
   } catch (error) {

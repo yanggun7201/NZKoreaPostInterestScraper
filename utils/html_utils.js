@@ -11,7 +11,7 @@ function extractPostId(link) {
   return -1;
 }
 
-async function extractBody(body, processCallback) {
+async function extractProductBody(body, processCallback) {
   const $ = cheerio.load(body);
   const trs = $('#fboardlist .table-responsive > table > tbody > tr');
 
@@ -37,6 +37,14 @@ async function extractBody(body, processCallback) {
 
 }
 
+async function extractExchange(body, processCallback) {
+  const $ = cheerio.load(body);
+  const exchangeString = $('#section1 > div.col-lg-4.home-widget > div:nth-child(2) > div > div > div:nth-child(6) > span').text().trim();
+  const nzExchange = Number(exchangeString);
+
+  await processCallback({ nzExchange, date: formatDate(new Date()) });
+}
+
 function formatDate(date) {
   const formatter = new Intl.DateTimeFormat('en', { year: 'numeric', month: '2-digit', day: '2-digit' });
   const parts = formatter.formatToParts(date);
@@ -48,5 +56,6 @@ function formatDate(date) {
 
 
 module.exports = {
-  extractBody,
+  extractProductBody: extractProductBody,
+  extractExchange: extractExchange,
 }
